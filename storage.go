@@ -83,6 +83,7 @@ func (s *Storage) PrivateKeyToPkcs1PEM() (privateKeyPem []byte, err error) {
 	return
 }
 
+//
 func (s *Storage) PublicKeyToPkcs1PEM(key *rsa.PublicKey) (publicKeyPem []byte, err error) {
 	if key == nil {
 		if s.privateKey == nil {
