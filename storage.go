@@ -83,6 +83,30 @@ func (s *Storage) PrivateKeyToPkcs1PEM() (privateKeyPem []byte, err error) {
 	return
 }
 
+func (s *Storage) PublicKeyToPkcs1PEM(key *rsa.PublicKey) (publicKeyPem []byte, err error) {
+	if key == nil {
+		if s.privateKey == nil {
+			err = errors.New("private key is not set, either call GenerateKey or SetPrivateKey manually")
+			return
+		}
+		key = &s.privateKey.PublicKey
+	}
+	var publicKeyBytes []byte
+	publicKeyBytes, err = x509.MarshalPKIXPublicKey(s.privateKey)
+	publicKeyBlock := &pem.Block{
+		Type:  "PUBLIC KEY",
+		Bytes: publicKeyBytes,
+	}
+	var b bytes.Buffer
+	err = pem.Encode(&b, publicKeyBlock)
+	if err != nil {
+		err = errors.New(fmt.Sprintf("error when encoding public key to pem: %s", err))
+		return
+	}
+	publicKeyPem = b.Bytes()
+	return
+}
+
 func (s *Storage) StorePrivateKeyPkcs1Pem(path string) (err error) {
 	if s.privateKey == nil {
 		err = errors.New("private key is not set, either call GenerateKey or SetPrivateKey manually")
