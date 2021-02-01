@@ -108,6 +108,31 @@ func (s *Storage) PublicKeyToPkcs1PEM(key *rsa.PublicKey) (publicKeyPem []byte, 
 	return
 }
 
+//
+func (s *Storage) PublicKeyToPkix1PEM(key *rsa.PublicKey) (publicKeyPem []byte, err error) {
+	if key == nil {
+		if s.privateKey == nil {
+			err = errors.New("private key is not set, either call GenerateKey or SetPrivateKey manually")
+			return
+		}
+		key = &s.privateKey.PublicKey
+	}
+	var publicKeyBytes []byte
+	publicKeyBytes, err = x509.MarshalPKIXPublicKey(key)
+	publicKeyBlock := &pem.Block{
+		Type:  "PUBLIC KEY",
+		Bytes: publicKeyBytes,
+	}
+	var b bytes.Buffer
+	err = pem.Encode(&b, publicKeyBlock)
+	if err != nil {
+		err = errors.New(fmt.Sprintf("error when encoding public key to pem: %s", err))
+		return
+	}
+	publicKeyPem = b.Bytes()
+	return
+}
+
 func (s *Storage) StorePrivateKeyPkcs1Pem(path string) (err error) {
 	if s.privateKey == nil {
 		err = errors.New("private key is not set, either call GenerateKey or SetPrivateKey manually")
@@ -145,6 +170,20 @@ func (s *Storage) PublicKeyFromPkixPemBytes(bs []byte) (key rsa.PublicKey, err e
 	return
 }
 
+func (s *Storage) PublicKeyFromPkcs1PemBytes(bs []byte) (key rsa.PublicKey, err error) {
+	var block *pem.Block
+	block, _ = pem.Decode(bs)
+
+	var pub interface{}
+	pub, err = x509.ParsePKCS1PublicKey(block.Bytes)
+	if err != nil {
+		err = errors.New(fmt.Sprintf("error when parsing public pem: %s", err))
+		return
+	}
+	key = pub.(rsa.PublicKey)
+	return
+}
+
 func (s *Storage) PublicKeyFromPkixPemPath(path string) (key rsa.PublicKey, err error) {
 	var bs []byte
 	bs, err = ioutil.ReadFile(path)
@@ -152,6 +191,16 @@ func (s *Storage) PublicKeyFromPkixPemPath(path string) (key rsa.PublicKey, err 
 		return
 	}
 	key, err = s.PublicKeyFromPkixPemBytes(bs)
+	return
+}
+
+func (s *Storage) PublicKeyFromPkcs1PemPath(path string) (key rsa.PublicKey, err error) {
+	var bs []byte
+	bs, err = ioutil.ReadFile(path)
+	if err != nil {
+		return
+	}
+	key, err = s.PublicKeyFromPkcs1PemBytes(bs)
 	return
 }
 
