@@ -170,17 +170,15 @@ func (s *Storage) PublicKeyFromPkixPemBytes(bs []byte) (key rsa.PublicKey, err e
 	return
 }
 
-func (s *Storage) PublicKeyFromPkcs1PemBytes(bs []byte) (key rsa.PublicKey, err error) {
+func (s *Storage) PublicKeyFromPkcs1PemBytes(bs []byte) (key *rsa.PublicKey, err error) {
 	var block *pem.Block
 	block, _ = pem.Decode(bs)
 
-	var pub interface{}
-	pub, err = x509.ParsePKCS1PublicKey(block.Bytes)
+	key, err = x509.ParsePKCS1PublicKey(block.Bytes)
 	if err != nil {
 		err = errors.New(fmt.Sprintf("error when parsing public pem: %s", err))
 		return
 	}
-	key = pub.(rsa.PublicKey)
 	return
 }
 
@@ -194,7 +192,7 @@ func (s *Storage) PublicKeyFromPkixPemPath(path string) (key rsa.PublicKey, err 
 	return
 }
 
-func (s *Storage) PublicKeyFromPkcs1PemPath(path string) (key rsa.PublicKey, err error) {
+func (s *Storage) PublicKeyFromPkcs1PemPath(path string) (key *rsa.PublicKey, err error) {
 	var bs []byte
 	bs, err = ioutil.ReadFile(path)
 	if err != nil {
