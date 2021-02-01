@@ -93,7 +93,7 @@ func (s *Storage) PublicKeyToPkcs1PEM(key *rsa.PublicKey) (publicKeyPem []byte, 
 		key = &s.privateKey.PublicKey
 	}
 	var publicKeyBytes []byte
-	publicKeyBytes, err = x509.MarshalPKIXPublicKey(key)
+	publicKeyBytes = x509.MarshalPKCS1PublicKey(key)
 	publicKeyBlock := &pem.Block{
 		Type:  "PUBLIC KEY",
 		Bytes: publicKeyBytes,
