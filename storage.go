@@ -156,6 +156,7 @@ func (s *Storage) PublicKey() (key *rsa.PublicKey, err error) {
 	return
 }
 
+// commit
 func (s *Storage) PublicKeyFromPkixPemBytes(bs []byte) (key *rsa.PublicKey, err error) {
 	var block *pem.Block
 	block, _ = pem.Decode(bs)
