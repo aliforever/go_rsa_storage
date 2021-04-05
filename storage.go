@@ -95,7 +95,7 @@ func (s *Storage) PublicKeyToPkcs1PEM(key *rsa.PublicKey) (publicKeyPem []byte, 
 	var publicKeyBytes []byte
 	publicKeyBytes = x509.MarshalPKCS1PublicKey(key)
 	publicKeyBlock := &pem.Block{
-		Type:  "PUBLIC KEY",
+		Type:  "RSA PUBLIC KEY",
 		Bytes: publicKeyBytes,
 	}
 	var b bytes.Buffer
