@@ -49,6 +49,13 @@ func (s *Storage) SetPrivateKeyFromPkcs1PemBytes(key []byte) (err error) {
 	return
 }
 
+func (s *Storage) PrivateKeyFromPkcs1PemBytes(key []byte) (privateKey *rsa.PrivateKey, err error) {
+	var block *pem.Block
+	block, _ = pem.Decode(key)
+	privateKey, err = x509.ParsePKCS1PrivateKey(block.Bytes)
+	return
+}
+
 func (s *Storage) SetPrivateKeyFromPkcs1PemFile(path string) (privateKey *rsa.PrivateKey, err error) {
 	var bs []byte
 	bs, err = ioutil.ReadFile(path)
