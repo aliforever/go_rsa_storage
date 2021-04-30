@@ -12,7 +12,6 @@ import (
 	"os"
 )
 
-// commit version
 type Storage struct {
 	privateKey *rsa.PrivateKey
 }
@@ -30,6 +29,16 @@ func (s *Storage) GenerateKey() (privateKey *rsa.PrivateKey, err error) {
 	}
 	s.privateKey = privateKey
 	_, err = s.PrivateKeyToPkcs1PEM()
+	return
+}
+
+func (s *Storage) GenerateKeyAndPkcs1PEM(bits int) (privateKey *rsa.PrivateKey, pem []byte, err error) {
+	privateKey, err = rsa.GenerateKey(rand.Reader, bits)
+	if err != nil {
+		err = errors.New(fmt.Sprintf("error when generate private key: %s", err))
+		return
+	}
+	pem, err = s.PrivateKeyCustomToPkcs1PEM(privateKey)
 	return
 }
 
@@ -77,6 +86,27 @@ func (s *Storage) PrivateKeyToPkcs1PEM() (privateKeyPem []byte, err error) {
 	}
 	var privateKeyBytes []byte
 	privateKeyBytes = x509.MarshalPKCS1PrivateKey(s.privateKey)
+	privateKeyBlock := &pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: privateKeyBytes,
+	}
+	var b bytes.Buffer
+	err = pem.Encode(&b, privateKeyBlock)
+	if err != nil {
+		err = errors.New(fmt.Sprintf("error when encoding private key to pem: %s", err))
+		return
+	}
+	privateKeyPem = b.Bytes()
+	return
+}
+
+func (s *Storage) PrivateKeyCustomToPkcs1PEM(privateKey *rsa.PrivateKey) (privateKeyPem []byte, err error) {
+	if privateKey == nil {
+		err = errors.New("private key is not set, either call GenerateKey or SetPrivateKey manually")
+		return
+	}
+	var privateKeyBytes []byte
+	privateKeyBytes = x509.MarshalPKCS1PrivateKey(privateKey)
 	privateKeyBlock := &pem.Block{
 		Type:  "RSA PRIVATE KEY",
 		Bytes: privateKeyBytes,
