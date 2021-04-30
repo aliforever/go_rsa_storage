@@ -12,6 +12,7 @@ import (
 	"os"
 )
 
+// commit version
 type Storage struct {
 	privateKey *rsa.PrivateKey
 }
